@@ -16,6 +16,6 @@ simple packagecloud command line tool.
 
     packagecloud yank example-user/example-repository/ubuntu/xenial example_1.0.1-1_amd64.deb
 
-###Promoting packages between repositories
+### Promoting packages between repositories
 
     packagecloud promote example-user/repo1/ubuntu/xenial example_1.0-1_amd64.deb example-user/repo2
