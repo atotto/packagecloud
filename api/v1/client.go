@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 )
@@ -32,10 +31,6 @@ func PushPackage(ctx context.Context, repos, distro, version string, fpath strin
 	}
 	defer f.Close()
 	_, fname := filepath.Split(fpath)
-
-	form := url.Values{}
-	form.Add("package[distro_version_id]", distroVersionID)
-	form.Add("package[distro_version_id]", distroVersionID)
 
 	var buf bytes.Buffer
 	mw := multipart.NewWriter(&buf)
