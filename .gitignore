@@ -12,3 +12,5 @@
 *.out
 
 packagecloud
+*.deb
+pkg-build

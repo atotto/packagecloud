@@ -1,0 +1,23 @@
+{
+  "name": "packagecloud",
+  "version": "0.1.0",
+  "maintainer": "Ato Araki (@atotto)",
+  "description": "packagecloud tool",
+  "changelog-cmd": "git log --pretty='format:%cd %h %s %d [%an]' --date=iso --merges",
+  "homepage": "https://github.com/atotto/packagecloud",
+  "files": [
+    {
+      "from": "packagecloud",
+      "to": "/usr/local/bin/",
+      "fperm": "0755"
+    }
+  ],
+  "copyrights": [
+    {
+      "files": "*",
+      "copyright": "Copyright (c) 2019 Ato Araki",
+      "license": "MIT",
+      "file": "LICENSE"
+    }
+  ]
+}
