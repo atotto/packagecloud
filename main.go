@@ -23,8 +23,9 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	subcommands.Register(subcommands.HelpCommand(), "")
-	subcommands.Register(&pushCommand{}, "")
-	subcommands.Register(&deleteCommand{}, "")
+	subcommands.Register(pushPackageCommand, "package")
+	subcommands.Register(deletePackageCommand, "package")
+	subcommands.Register(promotePackageCommand, "package")
 
 	flag.Parse()
 
@@ -46,20 +47,4 @@ You can find a packagecloud API token at https://packagecloud.io/api_token .`)
 		cancel()
 	case <-ctx.Done():
 	}
-}
-
-func run(ctx context.Context) error {
-	//if err := packagecloud.PushPackage(ctx, "groove-x/lovot-testing", "debian", "stretch", fpath); err != nil {
-	//	return err
-	//}
-	//
-	//if err := packagecloud.DeletePackage(ctx, "groove-x/lovot-testing", "debian", "stretch", fpath); err != nil {
-	//	return err
-	//}
-	//
-	//if err := packagecloud.PromotePackage(ctx, "groove-x/lovot", "groove-x/lovot-testing", "debian", "stretch", fpath); err != nil {
-	//	return err
-	//}
-
-	return nil
 }
