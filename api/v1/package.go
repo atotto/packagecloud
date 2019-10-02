@@ -3,14 +3,17 @@ package packagecloud
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -79,6 +82,62 @@ func PushPackage(ctx context.Context, repos, distro, version string, fpath strin
 	defer resp.Body.Close()
 
 	return processResponse(resp)
+}
+
+type PackageDetail struct {
+	Name          string    `json:"name"`
+	DistroVersion string    `json:"distro_version"`
+	CreateTime    time.Time `json:"created_at"`
+	Version       string    `json:"version"`
+	Type          string    `json:"type"`
+	Filename      string    `json:"filename"`
+	UploaderName  string    `json:"uploader_name"`
+	Indexed       bool      `json:"indexed"`
+	PackageURL    string    `json:"package_url"`
+	DownloadURL   string    `json:"download_url"`
+}
+
+func SearchPackage(ctx context.Context, repos, distro, query, filter string) ([]PackageDetail, error) {
+	q := url.Values{}
+	if distro != "" {
+		q.Add("dist", distro)
+	}
+	if query != "" {
+		q.Add("q", query)
+	}
+	if filter != "" {
+		q.Add("filter", filter)
+	}
+
+	url := fmt.Sprintf("https://packagecloud.io/api/v1/repos/%s/search?%s", repos, q.Encode())
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("http request: %s", err)
+	}
+	req.Header.Set("Accept", "application/json")
+
+	token := packagecloudToken(ctx)
+	req.SetBasicAuth(token, "")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("http post: %s", err)
+	}
+	defer resp.Body.Close()
+
+	switch resp.StatusCode {
+	case http.StatusOK:
+		var details []PackageDetail
+		if err := json.NewDecoder(resp.Body).Decode(&details); err != nil {
+			return nil, fmt.Errorf("json decode: %s", err)
+		}
+		return details, nil
+	default:
+		b, _ := ioutil.ReadAll(resp.Body)
+		return nil, fmt.Errorf("resp: %s, %q", resp.Status, b)
+	}
+
+	return nil, nil
 }
 
 func PromotePackage(ctx context.Context, dstRepos, srcRepo, distro, version string, fpath string) error {
