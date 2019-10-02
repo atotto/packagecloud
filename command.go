@@ -90,7 +90,7 @@ var searchPackageCommand = &commandBase{
 		version := f.Arg(2)
 		for _, detail := range details {
 			if version == "" || detail.Version == version {
-				fmt.Printf("%s %s %s\n", detail.Name, detail.Version, detail.DownloadURL)
+				fmt.Printf("%s %s %s\n", detail.DistroVersion, detail.Name, detail.Version, detail.Filename)
 			}
 		}
 
