@@ -12,13 +12,6 @@ import (
 	"path/filepath"
 )
 
-type client struct {
-}
-
-func NewPackagecloud(ctx context.Context) {
-
-}
-
 func PushPackage(ctx context.Context, repos, distro, version string, fpath string) error {
 	distroVersionID, ok := distributions.DistroVersionID(distro, version)
 	if !ok {
