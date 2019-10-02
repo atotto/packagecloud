@@ -56,14 +56,42 @@ var pushPackageCommand = &commandBase{
 	[]string{"packagecloud push example-user/example-repository/ubuntu/xenial /tmp/example.deb"},
 	nil,
 	func(ctx context.Context, f *flag.FlagSet, args ...interface{}) subcommands.ExitStatus {
-		repos, distro, version, ok := splitPackageTarget(f.Arg(0))
-		if !ok {
+		repos, distro, version, n := splitPackageTarget(f.Arg(0))
+		if n != 4 {
 			return subcommands.ExitUsageError
 		}
 		fpath := f.Arg(1)
 		if err := packagecloud.PushPackage(ctx, repos, distro, version, fpath); err != nil {
 			log.Println(err)
 			return subcommands.ExitFailure
+		}
+
+		return subcommands.ExitSuccess
+	},
+}
+
+var searchPackageCommand = &commandBase{
+	"list",
+	"list package",
+	"list name/repo query [version]",
+	[]string{"packagecloud list example-user/example-repository example 1.0.0"},
+	nil,
+	func(ctx context.Context, f *flag.FlagSet, args ...interface{}) subcommands.ExitStatus {
+		repos, distro, _, n := splitPackageTarget(f.Arg(0))
+		if n < 2 {
+			return subcommands.ExitUsageError
+		}
+		query := f.Arg(1)
+		details, err := packagecloud.SearchPackage(ctx, repos, distro, query, "")
+		if err != nil {
+			log.Println(err)
+			return subcommands.ExitFailure
+		}
+		version := f.Arg(2)
+		for _, detail := range details {
+			if version == "" || detail.Version == version {
+				fmt.Printf("%s %s %s\n", detail.Name, detail.Version, detail.DownloadURL)
+			}
 		}
 
 		return subcommands.ExitSuccess
@@ -77,8 +105,8 @@ var deletePackageCommand = &commandBase{
 	[]string{"packagecloud rm example-user/example-repository/ubuntu/xenial example_1.0.1-1_amd64.deb"},
 	nil,
 	func(ctx context.Context, f *flag.FlagSet, args ...interface{}) subcommands.ExitStatus {
-		repos, distro, version, ok := splitPackageTarget(f.Arg(0))
-		if !ok {
+		repos, distro, version, n := splitPackageTarget(f.Arg(0))
+		if n != 4 {
 			return subcommands.ExitUsageError
 		}
 		fpath := f.Arg(1)
@@ -98,8 +126,8 @@ var promotePackageCommand = &commandBase{
 	[]string{"packagecloud promote example-user/repo1/ubuntu/xenial example_1.0-1_amd64.deb example-user/repo2"},
 	nil,
 	func(ctx context.Context, f *flag.FlagSet, args ...interface{}) subcommands.ExitStatus {
-		srcRepos, distro, version, ok := splitPackageTarget(f.Arg(0))
-		if !ok {
+		srcRepos, distro, version, n := splitPackageTarget(f.Arg(0))
+		if n != 4 {
 			return subcommands.ExitUsageError
 		}
 		fpath := f.Arg(1)
@@ -113,15 +141,17 @@ var promotePackageCommand = &commandBase{
 	},
 }
 
-func splitPackageTarget(target string) (repos, distro, version string, ok bool) {
+func splitPackageTarget(target string) (repos, distro, version string, n int) {
 	ss := strings.SplitN(target, "/", 4)
-	if len(ss) != 4 {
-		ok = false
-		return
+	n = len(ss)
+	if n >= 2 {
+		repos = fmt.Sprintf("%s/%s", ss[0], ss[1])
 	}
-	repos = fmt.Sprintf("%s/%s", ss[0], ss[1])
-	distro = ss[2]
-	version = ss[3]
-	ok = true
+	if n >= 3 {
+		distro = ss[2]
+	}
+	if n >= 4 {
+		version = ss[3]
+	}
 	return
 }
