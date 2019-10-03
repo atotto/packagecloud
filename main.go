@@ -32,7 +32,8 @@ func main() {
 	if PACKAGECLOUD_TOKEN == "" {
 		fmt.Fprintf(flag.CommandLine.Output(), `
 Please set an environment variable with the name PACKAGECLOUD_TOKEN, containing the value of a packagecloud API token.
-You can find a packagecloud API token at https://packagecloud.io/api_token .`)
+You can find a packagecloud API token at https://packagecloud.io/api_token .
+`)
 		log.Println(`PACKAGECLOUD_TOKEN is empty`)
 		os.Exit(2)
 	}
