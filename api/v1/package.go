@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func PushPackage(ctx context.Context, repos, distro, version string, fpath string) error {
@@ -18,11 +19,26 @@ func PushPackage(ctx context.Context, repos, distro, version string, fpath strin
 		return fmt.Errorf("unknown distribution: %s/%s", distro, version)
 	}
 
-	f, err := os.Open(fpath)
-	if err != nil {
-		return fmt.Errorf("file open: %s", err)
+	var r io.ReadCloser
+	var err error
+	if strings.HasPrefix(fpath, "http://") || strings.HasPrefix(fpath, "https://") {
+		resp, err := http.Get(fpath)
+		if err != nil {
+			return fmt.Errorf("http GET: %s", err)
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode > 400 {
+			body, _ := ioutil.ReadAll(resp.Body)
+			return fmt.Errorf("http GET: %s\n>> %q", resp.Status, body)
+		}
+		r = resp.Body
+	} else {
+		r, err = os.Open(fpath)
+		if err != nil {
+			return fmt.Errorf("file open: %s", err)
+		}
+		defer r.Close()
 	}
-	defer f.Close()
 	_, fname := filepath.Split(fpath)
 
 	var buf bytes.Buffer
@@ -34,7 +50,7 @@ func PushPackage(ctx context.Context, repos, distro, version string, fpath strin
 	if err != nil {
 		return fmt.Errorf("multipart: %s", err)
 	}
-	if _, err := io.Copy(w, f); err != nil {
+	if _, err := io.Copy(w, r); err != nil {
 		return fmt.Errorf("file read: %s", err)
 	}
 	if err := mw.Close(); err != nil {
@@ -63,7 +79,8 @@ func PushPackage(ctx context.Context, repos, distro, version string, fpath strin
 	case http.StatusCreated:
 		return nil
 	case http.StatusUnprocessableEntity:
-		return fmt.Errorf("already pushed")
+		b, _ := ioutil.ReadAll(resp.Body)
+		return fmt.Errorf("unprocess %s", string(b))
 	default:
 		b, _ := ioutil.ReadAll(resp.Body)
 		return fmt.Errorf("resp: %s, %q", resp.Status, b)
