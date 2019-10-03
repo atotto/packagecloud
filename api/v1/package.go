@@ -81,7 +81,18 @@ func PushPackage(ctx context.Context, repos, distro, version string, fpath strin
 	}
 	defer resp.Body.Close()
 
-	return processResponse(resp)
+	switch resp.StatusCode {
+	case http.StatusCreated:
+		return nil
+	case http.StatusUnprocessableEntity:
+		b, _ := ioutil.ReadAll(resp.Body)
+		return fmt.Errorf("unprocess %s", string(b))
+	default:
+		b, _ := ioutil.ReadAll(resp.Body)
+		return fmt.Errorf("resp: %s, %q", resp.Status, b)
+	}
+
+	return nil
 }
 
 type PackageDetail struct {
