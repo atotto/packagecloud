@@ -14,7 +14,7 @@ simple packagecloud command line tool.
     
 ### Deleting a package
 
-    packagecloud yank example-user/example-repository/ubuntu/xenial example_1.0.1-1_amd64.deb
+    packagecloud rm example-user/example-repository/ubuntu/xenial example_1.0.1-1_amd64.deb
 
 ### Promoting packages between repositories
 

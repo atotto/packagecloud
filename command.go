@@ -71,10 +71,10 @@ var pushPackageCommand = &commandBase{
 }
 
 var deletePackageCommand = &commandBase{
-	"yank",
+	"rm",
 	"deleting a package",
-	"yank name/repo/distro/version filepath",
-	[]string{"packagecloud yank example-user/example-repository/ubuntu/xenial example_1.0.1-1_amd64.deb"},
+	"rm name/repo/distro/version filepath",
+	[]string{"packagecloud rm example-user/example-repository/ubuntu/xenial example_1.0.1-1_amd64.deb"},
 	nil,
 	func(ctx context.Context, f *flag.FlagSet, args ...interface{}) subcommands.ExitStatus {
 		repos, distro, version, ok := splitPackageTarget(f.Arg(0))
