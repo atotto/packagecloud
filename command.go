@@ -5,7 +5,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
+	"os"
 	"strings"
 
 	packagecloud "github.com/atotto/packagecloud/api/v1"
@@ -90,7 +93,47 @@ var searchPackageCommand = &commandBase{
 		version := f.Arg(2)
 		for _, detail := range details {
 			if version == "" || detail.Version == version {
-				fmt.Printf("%s %s %s\n", detail.DistroVersion, detail.Name, detail.Version, detail.Filename)
+				fmt.Printf("%s %s %s %s\n", detail.DistroVersion, detail.Filename, detail.Name, detail.Version)
+			}
+		}
+
+		return subcommands.ExitSuccess
+	},
+}
+
+var downloadPackageCommand = &commandBase{
+	"download",
+	"download package",
+	"download name/repo[/distro/version] filename",
+	[]string{"packagecloud download example-user/example-repository example_1.0.0_all.deb"},
+	nil,
+	func(ctx context.Context, f *flag.FlagSet, args ...interface{}) subcommands.ExitStatus {
+		repos, distro, version, n := splitPackageTarget(f.Arg(0))
+		if n < 2 {
+			return subcommands.ExitUsageError
+		}
+		query := f.Arg(1)
+		details, err := packagecloud.SearchPackage(ctx, repos, distro, query, "")
+		if err != nil {
+			log.Println(err)
+			return subcommands.ExitFailure
+		}
+		for _, detail := range details {
+			if version == "" || detail.Version == version {
+				fmt.Printf("%s %s %s %s\n", detail.Filename, detail.Name, detail.Version, detail.DistroVersion)
+				f, err := os.OpenFile(detail.Filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+				if err != nil {
+					log.Println(err)
+					return subcommands.ExitFailure
+				}
+				defer f.Close()
+				resp, err := http.Get(detail.DownloadURL)
+				if err != nil {
+					log.Println(err)
+					return subcommands.ExitFailure
+				}
+				defer resp.Body.Close()
+				io.Copy(f, resp.Body)
 			}
 		}
 
