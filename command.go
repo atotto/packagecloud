@@ -101,11 +101,11 @@ var searchPackageCommand = &commandBase{
 	},
 }
 
-var downloadPackageCommand = &commandBase{
-	"download",
-	"download package",
-	"download name/repo[/distro/version] filename",
-	[]string{"packagecloud download example-user/example-repository example_1.0.0_all.deb"},
+var pullPackageCommand = &commandBase{
+	"pull",
+	"pull package",
+	"pull name/repo[/distro/version] filename",
+	[]string{"packagecloud pull example-user/example-repository example_1.0.0_all.deb"},
 	nil,
 	func(ctx context.Context, f *flag.FlagSet, args ...interface{}) subcommands.ExitStatus {
 		repos, distro, version, n := splitPackageTarget(f.Arg(0))

@@ -24,10 +24,10 @@ func main() {
 
 	subcommands.Register(subcommands.HelpCommand(), "")
 	subcommands.Register(pushPackageCommand, "package")
+	subcommands.Register(pullPackageCommand, "package")
 	subcommands.Register(searchPackageCommand, "package")
-	subcommands.Register(deletePackageCommand, "package")
 	subcommands.Register(promotePackageCommand, "package")
-	subcommands.Register(downloadPackageCommand, "package")
+	subcommands.Register(deletePackageCommand, "package")
 
 	flag.Parse()
 
