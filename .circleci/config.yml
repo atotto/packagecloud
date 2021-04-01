@@ -36,7 +36,7 @@ jobs:
     steps:
     - attach_workspace:
         at: /workspace
-    - run: packagecloud push ato/deb/debian/buster *.deb
+    - run: packagecloud push atotto/packagecloud/any/any *.deb || true
 
 workflows:
   version: 2
