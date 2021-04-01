@@ -28,6 +28,7 @@ func main() {
 	subcommands.Register(searchPackageCommand, "package")
 	subcommands.Register(promotePackageCommand, "package")
 	subcommands.Register(deletePackageCommand, "package")
+	subcommands.Register(helpDistroCommand, "help")
 
 	flag.Parse()
 

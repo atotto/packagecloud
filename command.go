@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -197,4 +198,40 @@ func splitPackageTarget(target string) (repos, distro, version string, n int) {
 		version = ss[3]
 	}
 	return
+}
+
+var helpDistroCommand = &commandBase{
+	"distro",
+	"list supported distributions",
+	"distro [deb/py]",
+	[]string{"packagecloud distro", "packagecloud distro deb", "packagecloud distro deb ubuntu", "packagecloud distro | jq .deb"},
+	nil,
+	func(ctx context.Context, f *flag.FlagSet, args ...interface{}) subcommands.ExitStatus {
+		var v interface{}
+		switch typ := f.Arg(0); typ {
+		case "deb", "debian":
+			if name := f.Arg(1); name != "" {
+				for _, distros := range packagecloud.GetDistributions().Deb {
+					if distros.IndexName == name {
+						v = distros.Versions
+						break
+					}
+				}
+			} else {
+				v = packagecloud.GetDistributions().Deb
+			}
+
+		case "py", "python":
+			v = packagecloud.GetDistributions().Py
+		case "":
+			v = packagecloud.GetDistributions()
+		default:
+			log.Printf("not supported type:%s", typ)
+			return subcommands.ExitUsageError
+		}
+		if err := json.NewEncoder(os.Stdout).Encode(v); err != nil {
+			return subcommands.ExitFailure
+		}
+		return subcommands.ExitSuccess
+	},
 }
