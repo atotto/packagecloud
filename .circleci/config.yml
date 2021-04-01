@@ -36,7 +36,7 @@ jobs:
     steps:
     - attach_workspace:
         at: /workspace
-    - run: packagecloud push atotto/packagecloud/any/any packagecloud_*.deb || true
+    - run: packagecloud push atotto/debian-utils/any/any packagecloud_*.deb || true
 
 workflows:
   version: 2

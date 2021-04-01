@@ -6,6 +6,11 @@ simple packagecloud command line tool.
 
     go get github.com/atotto/packagecloud
 
+or
+
+    curl -s https://packagecloud.io/install/repositories/atotto/debian-utils/script.deb.sh | os=any dist=any sudo -E bash
+    sudo apt install packagecloud
+
 ## Usage
 
 ### Pushing a package
