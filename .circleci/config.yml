@@ -12,51 +12,58 @@ jobs:
   build:
     <<: *defaults
     steps:
-    - run: go env
-    - checkout
-    - restore_cache:
-        keys:
-        - go-module-cache-v1-{{ checksum "/workspace/go.sum" }}
-        - go-module-cache-v1-
-    - run: go mod download
-    - save_cache:
-        key: go-module-cache-v1-{{ checksum "/workspace/go.sum" }}
-        paths:
-        - /pkg/mod/cache
-    - run: go vet ./...
-    - run: go test -v ./...
-    - run:
-        name: build for arm64
-        command: rm -rf pkg-build && export GOARCH=arm64 && go build && go-bin-deb generate --arch ${GOARCH}
-    - run:
-        name: build for armhf v7
-        command: rm -rf pkg-build && GOARCH=arm GOARM=7 go build && go-bin-deb generate --arch armhf
-    - run:
-        name: build for amd64
-        command: rm -rf pkg-build && export GOARCH=amd64 && go build && go-bin-deb generate --arch ${GOARCH}
-    - persist_to_workspace:
-        root: /workspace
-        paths:
-        - "*.deb"
-        - "packagecloud"
+      - run: go env
+      - checkout
+      - restore_cache:
+          keys:
+            - go-module-cache-v1-{{ checksum "/workspace/go.sum" }}
+            - go-module-cache-v1-
+      - run: go mod download
+      - save_cache:
+          key: go-module-cache-v1-{{ checksum "/workspace/go.sum" }}
+          paths:
+            - /pkg/mod/cache
+      - run: go vet ./...
+      - run: go test -v ./...
+      - run: go build && go clean
+      - persist_to_workspace:
+          root: /workspace
+          paths:
+            - .
 
   deploy:
     <<: *defaults
     steps:
-    - attach_workspace:
-        at: /workspace
-    - run: ./packagecloud push atotto/debian-utils/any/any packagecloud_*.deb || true
+      - restore_cache:
+          keys:
+            - go-module-cache-v1-{{ checksum "/workspace/go.sum" }}
+            - go-module-cache-v1-
+      - attach_workspace:
+          at: /workspace
+      - run:
+          name: release version ${CIRCLE_TAG#v}
+          command: echo "release version ${CIRCLE_TAG#v}"
+      - run:
+          name: build for arm64
+          command: rm -rf pkg-build && export GOARCH=arm64 && go build && go-bin-deb generate --arch ${GOARCH} --version ${CIRCLE_TAG#v}
+      - run:
+          name: build for armhf v7
+          command: rm -rf pkg-build && GOARCH=arm GOARM=7 go build && go-bin-deb generate --arch armhf --version ${CIRCLE_TAG#v}
+      - run:
+          name: build for amd64
+          command: rm -rf pkg-build && export GOARCH=amd64 && go build && go-bin-deb generate --arch ${GOARCH} --version ${CIRCLE_TAG#v}
+      - run: ./packagecloud push atotto/debian-utils/any/any packagecloud_*.deb || true
 
 workflows:
   version: 2
   test:
     jobs:
-    - build
-    - deploy:
-        requires:
-        - build
-        filters:
-          tags:
-            only: /^v.*/
-          branches:
-            ignore: /.*/
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
