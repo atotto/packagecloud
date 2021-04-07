@@ -61,7 +61,12 @@ workflows:
       - build
   build_and_deploy:
     jobs:
-      - build
+      - build:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
       - deploy:
           requires:
             - build
