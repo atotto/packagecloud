@@ -24,8 +24,15 @@ jobs:
         paths:
         - /pkg/mod/cache
     - run: go test -v ./...
-    - run: go build 
-    - run: go-bin-deb generate --arch amd64
+    - run:
+        name: build for amd64
+        command: rm -rf pkg-build && export GOARCH=amd64 && go build && go-bin-deb generate --arch ${GOARCH}
+    - run:
+        name: build for arm64
+        command: rm -rf pkg-build && export GOARCH=arm64 && go build && go-bin-deb generate --arch ${GOARCH}
+    - run:
+        name: build for armhf v7
+        command: rm -rf pkg-build && GOARCH=arm GOARM=7 go build && go-bin-deb generate --arch armhf
     - persist_to_workspace:
         root: /workspace
         paths:
