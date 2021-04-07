@@ -26,25 +26,26 @@ jobs:
     - run: go vet ./...
     - run: go test -v ./...
     - run:
-        name: build for amd64
-        command: rm -rf pkg-build && export GOARCH=amd64 && go build && go-bin-deb generate --arch ${GOARCH}
-    - run:
         name: build for arm64
         command: rm -rf pkg-build && export GOARCH=arm64 && go build && go-bin-deb generate --arch ${GOARCH}
     - run:
         name: build for armhf v7
         command: rm -rf pkg-build && GOARCH=arm GOARM=7 go build && go-bin-deb generate --arch armhf
+    - run:
+        name: build for amd64
+        command: rm -rf pkg-build && export GOARCH=amd64 && go build && go-bin-deb generate --arch ${GOARCH}
     - persist_to_workspace:
         root: /workspace
         paths:
         - "*.deb"
+        - "packagecloud"
 
   deploy:
     <<: *defaults
     steps:
     - attach_workspace:
         at: /workspace
-    - run: packagecloud push atotto/debian-utils/any/any packagecloud_*.deb || true
+    - run: ./packagecloud push atotto/debian-utils/any/any packagecloud_*.deb || true
 
 workflows:
   version: 2
@@ -55,5 +56,7 @@ workflows:
         requires:
         - build
         filters:
+          tags:
+            only: /^v.*/
           branches:
-            only: master
+            ignore: /.*/
