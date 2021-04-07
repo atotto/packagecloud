@@ -136,8 +136,6 @@ func SearchPackage(ctx context.Context, repos, distro, query, filter string) ([]
 		b, _ := ioutil.ReadAll(resp.Body)
 		return nil, fmt.Errorf("resp: %s, %q", resp.Status, b)
 	}
-
-	return nil, nil
 }
 
 func PromotePackage(ctx context.Context, dstRepos, srcRepo, distro, version string, fpath string) error {

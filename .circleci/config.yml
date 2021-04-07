@@ -23,6 +23,7 @@ jobs:
         key: go-module-cache-v1-{{ checksum "/workspace/go.sum" }}
         paths:
         - /pkg/mod/cache
+    - run: go vet ./...
     - run: go test -v ./...
     - run:
         name: build for amd64
