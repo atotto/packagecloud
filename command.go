@@ -10,10 +10,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	packagecloud "github.com/atotto/packagecloud/api/v1"
 	"github.com/google/subcommands"
+	"github.com/mattn/go-zglob"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type commandBase struct {
@@ -53,23 +57,43 @@ func (c *commandBase) Execute(ctx context.Context, f *flag.FlagSet, args ...inte
 	return c.executeFunc(ctx, f, args)
 }
 
+var pushPackageCommandVerifyExist bool
 var pushPackageCommand = &commandBase{
 	"push",
 	"pushing a package",
 	"push name/repo/distro/version filepath",
 	[]string{"packagecloud push example-user/example-repository/ubuntu/xenial /tmp/example.deb"},
-	nil,
+	func(f *flag.FlagSet) {
+		f.BoolVar(&pushPackageCommandVerifyExist, "verify exist package", false, "ignore already pushed error")
+	},
 	func(ctx context.Context, f *flag.FlagSet, args ...interface{}) subcommands.ExitStatus {
 		repos, distro, version, n := splitPackageTarget(f.Arg(0))
 		if n != 4 {
 			return subcommands.ExitUsageError
 		}
-		fpath := f.Arg(1)
-		if err := packagecloud.PushPackage(ctx, repos, distro, version, fpath); err != nil {
-			log.Println(err)
-			return subcommands.ExitFailure
-		}
 
+		var files []string
+		for _, file := range f.Args()[1:] {
+			fs, err := zglob.Glob(file)
+			if err != nil {
+				return subcommands.ExitFailure
+			}
+			files = append(files, fs...)
+		}
+		fmt.Printf("pushing %d files...\n", len(files))
+
+		for _, file := range files {
+			_, fname := filepath.Split(file)
+			log.Printf("push: %s", fname)
+			if err := packagecloud.PushPackage(ctx, repos, distro, version, file); err != nil {
+				if !pushPackageCommandVerifyExist && status.Code(err) == codes.AlreadyExists {
+					log.Printf("%s already exist", fname)
+					continue
+				}
+				log.Printf("%s %s", fname, err)
+				return subcommands.ExitFailure
+			}
+		}
 		return subcommands.ExitSuccess
 	},
 }
