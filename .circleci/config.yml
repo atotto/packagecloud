@@ -52,11 +52,14 @@ jobs:
       - run:
           name: build for amd64
           command: rm -rf pkg-build && export GOARCH=amd64 && go build && go-bin-deb generate --arch ${GOARCH} --version ${CIRCLE_TAG#v}
-      - run: ./packagecloud push atotto/debian-utils/any/any packagecloud_*.deb || true
+      - run: ./packagecloud push atotto/debian-utils/any/any packagecloud_*.deb
 
 workflows:
   version: 2
   test:
+    jobs:
+      - build
+  build_and_deploy:
     jobs:
       - build
       - deploy:
