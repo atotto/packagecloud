@@ -34,12 +34,12 @@ jobs:
   deploy:
     <<: *defaults
     steps:
+      - attach_workspace:
+          at: /workspace
       - restore_cache:
           keys:
             - go-module-cache-v1-{{ checksum "/workspace/go.sum" }}
             - go-module-cache-v1-
-      - attach_workspace:
-          at: /workspace
       - run:
           name: release version ${CIRCLE_TAG#v}
           command: echo "release version ${CIRCLE_TAG#v}"
