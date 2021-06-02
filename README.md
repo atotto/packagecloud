@@ -57,4 +57,6 @@ jobs:
           name: setup atotto packagecloud
           command: |
             curl -s https://packagecloud.io/install/repositories/atotto/debian-utils/script.deb.sh | os=any dist=any bash
+            apt install -y packagecloud
+
 ```
