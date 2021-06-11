@@ -20,7 +20,16 @@ import (
 )
 
 func PushPackage(ctx context.Context, repos, distro, version string, fpath string) error {
-	distroVersionID, ok := distributions.DistroVersionID(distro, version)
+	var distroVersionID string
+	var ok bool
+	switch filepath.Ext(fpath) {
+	case ".deb":
+		distroVersionID, ok = distributions.DebianDistroVersionID(distro, version)
+	case ".whl":
+		distro = "python"
+		version = ""
+		distroVersionID, ok = distributions.PythonDistroVersionID(distro, version)
+	}
 	if !ok {
 		return status.Errorf(codes.InvalidArgument, "unknown distribution: %s/%s", distro, version)
 	}
@@ -49,8 +58,10 @@ func PushPackage(ctx context.Context, repos, distro, version string, fpath strin
 
 	var buf bytes.Buffer
 	mw := multipart.NewWriter(&buf)
-	if err := mw.WriteField(`package[distro_version_id]`, distroVersionID); err != nil {
-		return status.Errorf(codes.InvalidArgument, "multipart: %s", err)
+	if distroVersionID != "" {
+		if err := mw.WriteField(`package[distro_version_id]`, distroVersionID); err != nil {
+			return status.Errorf(codes.InvalidArgument, "multipart: %s", err)
+		}
 	}
 	w, err := mw.CreateFormFile(`package[package_file]`, fname)
 	if err != nil {

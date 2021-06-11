@@ -3,7 +3,7 @@ package packagecloud
 import "testing"
 
 func TestDistro(t *testing.T) {
-	id, ok := distributions.DistroVersionID("debian", "stretch")
+	id, ok := distributions.DebianDistroVersionID("debian", "stretch")
 	if !ok {
 		t.Fatal("not found")
 	}

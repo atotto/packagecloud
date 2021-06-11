@@ -18,8 +18,21 @@ type Distributions struct {
 	Py  []Distribution `json:"py"`
 }
 
-func (d *Distributions) DistroVersionID(distro, version string) (id string, ok bool) {
+func (d *Distributions) DebianDistroVersionID(distro, version string) (id string, ok bool) {
 	for _, di := range distributions.Deb {
+		if di.IndexName == distro {
+			for _, ver := range di.Versions {
+				if ver.IndexName == version {
+					return strconv.Itoa(ver.ID), true
+				}
+			}
+		}
+	}
+	return "", false
+}
+
+func (d *Distributions) PythonDistroVersionID(distro, version string) (id string, ok bool) {
+	for _, di := range distributions.Py {
 		if di.IndexName == distro {
 			for _, ver := range di.Versions {
 				if ver.IndexName == version {

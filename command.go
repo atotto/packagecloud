@@ -68,7 +68,7 @@ var pushPackageCommand = &commandBase{
 	},
 	func(ctx context.Context, f *flag.FlagSet, args ...interface{}) subcommands.ExitStatus {
 		repos, distro, version, n := splitPackageTarget(f.Arg(0))
-		if n != 4 {
+		if n < 3 {
 			return subcommands.ExitUsageError
 		}
 
