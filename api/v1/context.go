@@ -2,8 +2,10 @@ package packagecloud
 
 import "context"
 
+type packagecloudContextKey string
+
 const (
-	packagecloudTokenKey = "packagecloud token"
+	packagecloudTokenKey packagecloudContextKey = "packagecloud token"
 )
 
 func WithPackagecloudToken(ctx context.Context, token string) context.Context {
