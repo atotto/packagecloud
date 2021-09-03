@@ -22,20 +22,24 @@ import (
 func PushPackage(ctx context.Context, repos, distro, version string, fpath string) error {
 	var distroVersionID string
 	var ok bool
+
+	ds, err := GetDistributions(ctx)
+	if err != nil {
+		return err
+	}
 	switch filepath.Ext(fpath) {
 	case ".deb":
-		distroVersionID, ok = distributions.DebianDistroVersionID(distro, version)
+		distroVersionID, ok = ds.DebianDistroVersionID(distro, version)
 	case ".whl":
 		distro = "python"
 		version = ""
-		distroVersionID, ok = distributions.PythonDistroVersionID(distro, version)
+		distroVersionID, ok = ds.PythonDistroVersionID(distro, version)
 	}
 	if !ok {
 		return status.Errorf(codes.InvalidArgument, "unknown distribution: %s/%s", distro, version)
 	}
 
 	var r io.ReadCloser
-	var err error
 	if strings.HasPrefix(fpath, "http://") || strings.HasPrefix(fpath, "https://") {
 		resp, err := http.Get(fpath)
 		if err != nil {

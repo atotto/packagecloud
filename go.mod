@@ -7,3 +7,5 @@ require (
 	github.com/mattn/go-zglob v0.0.3
 	google.golang.org/grpc v1.24.0
 )
+
+replace github.com/atotto/packagecloud => ./

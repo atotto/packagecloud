@@ -232,23 +232,28 @@ var helpDistroCommand = &commandBase{
 	nil,
 	func(ctx context.Context, f *flag.FlagSet, args ...interface{}) subcommands.ExitStatus {
 		var v interface{}
+		distributions, err := packagecloud.GetDistributions(ctx)
+		if err != nil {
+			log.Println(err)
+			return subcommands.ExitUsageError
+		}
 		switch typ := f.Arg(0); typ {
 		case "deb", "debian":
 			if name := f.Arg(1); name != "" {
-				for _, distros := range packagecloud.GetDistributions().Deb {
+				for _, distros := range distributions.Deb {
 					if distros.IndexName == name {
 						v = distros.Versions
 						break
 					}
 				}
 			} else {
-				v = packagecloud.GetDistributions().Deb
+				v = distributions.Deb
 			}
 
 		case "py", "python":
-			v = packagecloud.GetDistributions().Py
+			v = distributions.Py
 		case "":
-			v = packagecloud.GetDistributions()
+			v = distributions
 		default:
 			log.Printf("not supported type:%s", typ)
 			return subcommands.ExitUsageError
