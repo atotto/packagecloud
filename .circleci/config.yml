@@ -1,16 +1,25 @@
 version: 2.1
 
-defaults: &defaults
-  docker:
-    - image: atotto/debian-builder:latest
-  working_directory: /workspace
-  environment:
-    GOPATH: /
-    GOCACHE: /.cache/go-build
+executors:
+  build:
+    docker:
+      - image: atotto/debian-builder:latest
+    working_directory: /workspace
+    environment:
+      GOPATH: /
+      GOCACHE: /.cache/go-build
+  deploy:
+    docker:
+      - image: atotto/debian-builder:latest
+    working_directory: /workspace
+    environment:
+      GOPATH: /
+      GOCACHE: /.cache/go-build
 
 jobs:
   build:
-    <<: *defaults
+    executor:
+      name: build
     steps:
       - run: go env
       - checkout
@@ -24,6 +33,7 @@ jobs:
           paths:
             - /pkg/mod/cache
       - run: go vet ./...
+      - run: staticcheck ./...
       - run: go test -v ./...
       - run: go build && go clean
       - persist_to_workspace:
@@ -32,7 +42,8 @@ jobs:
             - .
 
   deploy:
-    <<: *defaults
+    executor:
+      name: deploy
     steps:
       - attach_workspace:
           at: /workspace
