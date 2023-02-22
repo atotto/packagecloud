@@ -4,7 +4,7 @@ simple packagecloud command line tool.
 
 ## Install
 
-    go get github.com/atotto/packagecloud
+    go install github.com/atotto/packagecloud
 
 or
 
