@@ -29,11 +29,15 @@ func PushPackage(ctx context.Context, repos, distro, version string, fpath strin
 	}
 	switch filepath.Ext(fpath) {
 	case ".deb":
-		distroVersionID, ok = ds.DebianDistroVersionID(distro, version)
+		distroVersionID, ok = findDistroVersionID(ds.Deb, distro, version)
+	case ".dsc":
+		distroVersionID, ok = findDistroVersionID(ds.Dsc, distro, version)
+	case ".rpm":
+		distroVersionID, ok = findDistroVersionID(ds.Rpm, distro, version)
 	case ".whl":
 		distro = "python"
 		version = ""
-		distroVersionID, ok = ds.PythonDistroVersionID(distro, version)
+		distroVersionID, ok = findDistroVersionID(ds.Py, distro, version)
 	}
 	if !ok {
 		return status.Errorf(codes.InvalidArgument, "unknown distribution: %s/%s", distro, version)

@@ -16,7 +16,9 @@ var cacheDistributionsOnce sync.Once
 
 type Distributions struct {
 	Deb []Distribution `json:"deb"`
+	Rpm []Distribution `json:"rpm"`
 	Py  []Distribution `json:"py"`
+	Dsc []Distribution `json:"dsc"`
 }
 
 func GetDistributions(ctx context.Context) (*Distributions, error) {
@@ -75,8 +77,8 @@ func (d *Distributions) DebianDistroVersionID(distro, version string) (id string
 	return "", false
 }
 
-func (d *Distributions) PythonDistroVersionID(distro, version string) (id string, ok bool) {
-	for _, di := range distributions.Py {
+func findDistroVersionID(distributions []Distribution, distro, version string) (id string, ok bool) {
+	for _, di := range distributions {
 		if di.IndexName == distro {
 			for _, ver := range di.Versions {
 				if ver.IndexName == version {
