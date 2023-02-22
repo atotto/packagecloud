@@ -34,6 +34,8 @@ func PushPackage(ctx context.Context, repos, distro, version string, fpath strin
 		distroVersionID, ok = findDistroVersionID(ds.Dsc, distro, version)
 	case ".rpm":
 		distroVersionID, ok = findDistroVersionID(ds.Rpm, distro, version)
+	case ".apk":
+		distroVersionID, ok = findDistroVersionID(ds.Alpine, distro, version)
 	case ".whl":
 		distro = "python"
 		version = ""
