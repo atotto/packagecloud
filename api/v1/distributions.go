@@ -15,10 +15,15 @@ var distributions = &Distributions{}
 var cacheDistributionsOnce sync.Once
 
 type Distributions struct {
-	Deb []Distribution `json:"deb"`
-	Rpm []Distribution `json:"rpm"`
-	Py  []Distribution `json:"py"`
-	Dsc []Distribution `json:"dsc"`
+	Deb     []Distribution `json:"deb"`
+	Rpm     []Distribution `json:"rpm"`
+	Py      []Distribution `json:"py"`
+	Jar     []Distribution `json:"jar"`
+	Node    []Distribution `json:"node"`
+	Alpine  []Distribution `json:"alpine"`
+	Anyfile []Distribution `json:"anyfile"`
+	Helm    []Distribution `json:"helm"`
+	Dsc     []Distribution `json:"dsc"`
 }
 
 func GetDistributions(ctx context.Context) (*Distributions, error) {
