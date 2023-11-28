@@ -108,19 +108,20 @@ func PushPackage(ctx context.Context, repos, distro, version string, fpath strin
 }
 
 type PackageDetail struct {
-	Name              string    `json:"name"`
-	Arch              string    `json:"architecture"`
-	Release           string    `json:"release"`
-	DistroVersion     string    `json:"distro_version"`
-	CreateTime        time.Time `json:"created_at"`
-	Version           string    `json:"version"`
-	Type              string    `json:"type"`
-	Filename          string    `json:"filename"`
-	UploaderName      string    `json:"uploader_name"`
-	Indexed           bool      `json:"indexed"`
-	PackageURL        string    `json:"package_url"`
-	DownloadURL       string    `json:"download_url"`
-	DownloadsCountURL string    `json:"downloads_count_url"`
+	Name               string    `json:"name"`
+	Arch               string    `json:"architecture"`
+	Release            string    `json:"release"`
+	DistroVersion      string    `json:"distro_version"`
+	CreateTime         time.Time `json:"created_at"`
+	Version            string    `json:"version"`
+	Type               string    `json:"type"`
+	Filename           string    `json:"filename"`
+	UploaderName       string    `json:"uploader_name"`
+	Indexed            bool      `json:"indexed"`
+	PackageURL         string    `json:"package_url"`
+	DownloadURL        string    `json:"download_url"`
+	DownloadsCountURL  string    `json:"downloads_count_url"`
+	DownloadsDetailURL string    `json:"downloads_detail_url"`
 }
 
 func SearchPackage(ctx context.Context, repos, distro string, perPage int, query, filter string) ([]PackageDetail, error) {
@@ -143,8 +144,7 @@ func SearchPackage(ctx context.Context, repos, distro string, perPage int, query
 	var webLink map[string]*link.Link
 	var details []PackageDetail
 
-	var next = &link.Link{
-		URI: ""}
+	var next = &link.Link{}
 	for ; next != nil; next = webLink["next"] {
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
