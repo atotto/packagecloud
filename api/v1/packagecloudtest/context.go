@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	packagecloud "github.com/atotto/packagecloud/api/v1"
+	packagecloud "github.com/tyklabs/packagecloud/api/v1"
 )
 
 func SetupToken(tb testing.TB, ctx context.Context, token string) context.Context {

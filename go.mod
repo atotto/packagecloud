@@ -1,4 +1,4 @@
-module github.com/atotto/packagecloud
+module github.com/tyklabs/packagecloud
 
 go 1.12
 

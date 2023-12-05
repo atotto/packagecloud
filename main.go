@@ -9,8 +9,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	packagecloud "github.com/atotto/packagecloud/api/v1"
 	"github.com/google/subcommands"
+	packagecloud "github.com/tyklabs/packagecloud/api/v1"
 )
 
 var (

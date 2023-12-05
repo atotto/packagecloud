@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	packagecloud "github.com/atotto/packagecloud/api/v1"
-	"github.com/atotto/packagecloud/api/v1/packagecloudtest"
+	packagecloud "github.com/tyklabs/packagecloud/api/v1"
+	"github.com/tyklabs/packagecloud/api/v1/packagecloudtest"
 )
 
 func TestDistro(t *testing.T) {
