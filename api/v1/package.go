@@ -12,9 +12,11 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/peterhellberg/link"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -106,19 +108,23 @@ func PushPackage(ctx context.Context, repos, distro, version string, fpath strin
 }
 
 type PackageDetail struct {
-	Name          string    `json:"name"`
-	DistroVersion string    `json:"distro_version"`
-	CreateTime    time.Time `json:"created_at"`
-	Version       string    `json:"version"`
-	Type          string    `json:"type"`
-	Filename      string    `json:"filename"`
-	UploaderName  string    `json:"uploader_name"`
-	Indexed       bool      `json:"indexed"`
-	PackageURL    string    `json:"package_url"`
-	DownloadURL   string    `json:"download_url"`
+	Name               string    `json:"name"`
+	Arch               string    `json:"architecture"`
+	Release            string    `json:"release"`
+	DistroVersion      string    `json:"distro_version"`
+	CreateTime         time.Time `json:"created_at"`
+	Version            string    `json:"version"`
+	Type               string    `json:"type"`
+	Filename           string    `json:"filename"`
+	UploaderName       string    `json:"uploader_name"`
+	Indexed            bool      `json:"indexed"`
+	PackageURL         string    `json:"package_url"`
+	DownloadURL        string    `json:"download_url"`
+	DownloadsCountURL  string    `json:"downloads_count_url"`
+	DownloadsDetailURL string    `json:"downloads_detail_url"`
 }
 
-func SearchPackage(ctx context.Context, repos, distro, query, filter string) ([]PackageDetail, error) {
+func SearchPackage(ctx context.Context, repos, distro string, perPage int, query, filter string) ([]PackageDetail, error) {
 	q := url.Values{}
 	if distro != "" {
 		q.Add("dist", distro)
@@ -126,37 +132,61 @@ func SearchPackage(ctx context.Context, repos, distro, query, filter string) ([]
 	if query != "" {
 		q.Add("q", query)
 	}
+	if perPage != 0 {
+		q.Add("per_page", strconv.Itoa(perPage))
+	}
+
 	if filter != "" {
 		q.Add("filter", filter)
 	}
 
 	url := fmt.Sprintf("https://packagecloud.io/api/v1/repos/%s/search?%s", repos, q.Encode())
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("http request: %s", err)
-	}
-	req.Header.Set("Accept", "application/json")
+	var webLink map[string]*link.Link
+	var details []PackageDetail
 
-	token := packagecloudToken(ctx)
-	req.SetBasicAuth(token, "")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("http post: %s", err)
-	}
-	defer resp.Body.Close()
-
-	switch resp.StatusCode {
-	case http.StatusOK:
-		var details []PackageDetail
-		if err := json.NewDecoder(resp.Body).Decode(&details); err != nil {
-			return nil, fmt.Errorf("json decode: %s", err)
+	var next = &link.Link{}
+	for ; next != nil; next = webLink["next"] {
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return nil, fmt.Errorf("http request: %s", err)
 		}
-		return details, nil
-	default:
-		b, _ := ioutil.ReadAll(resp.Body)
-		return nil, fmt.Errorf("resp: %s, %q", resp.Status, b)
+		req.Header.Set("Accept", "application/json")
+		token := packagecloudToken(ctx)
+		req.SetBasicAuth(token, "")
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return nil, fmt.Errorf("http post: %s", err)
+		}
+		defer resp.Body.Close()
+
+		total := resp.Header.Get("Total")
+		perPage := resp.Header.Get("Per-Page")
+		totalInt, _ := strconv.Atoi(total)
+		perPageInt, _ := strconv.Atoi(perPage)
+
+		if total != "" && perPage != "" && totalInt > perPageInt {
+			webLink = link.ParseResponse(resp)
+			if n, ok := webLink["next"]; ok {
+				url = n.URI
+			}
+
+		} else {
+			next = nil
+		}
+
+		switch resp.StatusCode {
+		case http.StatusOK:
+			var detail []PackageDetail
+			if err := json.NewDecoder(resp.Body).Decode(&detail); err != nil {
+				return nil, fmt.Errorf("json decode: %s", err)
+			}
+			details = append(details, detail...)
+		default:
+			b, _ := ioutil.ReadAll(resp.Body)
+			return nil, fmt.Errorf("resp: %s, %q", resp.Status, b)
+		}
 	}
+	return details, nil
 }
 
 func PromotePackage(ctx context.Context, dstRepos, srcRepo, distro, version string, fpath string) error {

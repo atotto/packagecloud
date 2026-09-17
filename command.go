@@ -110,7 +110,7 @@ var searchPackageCommand = &commandBase{
 			return subcommands.ExitUsageError
 		}
 		query := f.Arg(1)
-		details, err := packagecloud.SearchPackage(ctx, repos, distro, query, "")
+		details, err := packagecloud.SearchPackage(ctx, repos, distro, 0, query, "")
 		if err != nil {
 			log.Println(err)
 			return subcommands.ExitFailure
@@ -138,7 +138,7 @@ var pullPackageCommand = &commandBase{
 			return subcommands.ExitUsageError
 		}
 		query := f.Arg(1)
-		details, err := packagecloud.SearchPackage(ctx, repos, distro, query, "")
+		details, err := packagecloud.SearchPackage(ctx, repos, distro, 0, query, "")
 		if err != nil {
 			log.Println(err)
 			return subcommands.ExitFailure
