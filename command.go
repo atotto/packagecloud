@@ -98,19 +98,28 @@ var pushPackageCommand = &commandBase{
 	},
 }
 
+var searchPackageCommandFilter string
+
+const searchPackageCommandPerPage = 250 // packagecloud.io's max-per-page
+
 var searchPackageCommand = &commandBase{
 	"list",
 	"list package",
-	"list name/repo query [version]",
-	[]string{"packagecloud list example-user/example-repository example 1.0.0"},
-	nil,
+	"list name/repo [query] [version]",
+	[]string{
+		"packagecloud list example-user/example-repository example 1.0.0",
+		"packagecloud list -filter=deb example-user/example-repository",
+	},
+	func(f *flag.FlagSet) {
+		f.StringVar(&searchPackageCommandFilter, "filter", "", "package type filter: deb, rpm, dsc, gem, python, node")
+	},
 	func(ctx context.Context, f *flag.FlagSet, args ...interface{}) subcommands.ExitStatus {
 		repos, distro, _, n := splitPackageTarget(f.Arg(0))
 		if n < 2 {
 			return subcommands.ExitUsageError
 		}
 		query := f.Arg(1)
-		details, err := packagecloud.SearchPackage(ctx, repos, distro, 0, query, "")
+		details, err := packagecloud.SearchPackage(ctx, repos, distro, searchPackageCommandPerPage, query, searchPackageCommandFilter)
 		if err != nil {
 			log.Println(err)
 			return subcommands.ExitFailure

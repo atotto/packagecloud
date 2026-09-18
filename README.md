@@ -16,7 +16,15 @@ or
 ### Pushing a package
 
     packagecloud push example-user/example-repository/ubuntu/xenial /tmp/example.deb
-    
+
+### Listing packages in a repository
+
+    packagecloud list example-user/example-repository example 1.0.0
+    packagecloud list -filter=deb example-user/example-repository
+
+`-filter` narrows the result to one package type (`deb`, `rpm`, `dsc`, `gem`, `python`, `node`).
+Without a query, `-filter`, or `dist`, the packagecloud.io search API rejects the request, so pass at least one of them to list everything. Results are paginated automatically.
+
 ### Deleting a package
 
     packagecloud rm example-user/example-repository/ubuntu/xenial example_1.0.1-1_amd64.deb
