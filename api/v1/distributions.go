@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"sync"
@@ -64,7 +64,7 @@ func getDistributions(ctx context.Context) (*Distributions, error) {
 		}
 		return &d, nil
 	default:
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		return nil, fmt.Errorf("resp: %s, %q", resp.Status, b)
 	}
 }

@@ -1,7 +1,7 @@
 package packagecloud
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"google.golang.org/grpc/codes"
@@ -13,16 +13,16 @@ func processResponse(resp *http.Response) error {
 	case http.StatusCreated:
 		return nil
 	case http.StatusUnauthorized:
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		return status.Error(codes.Unauthenticated, string(b))
 	case http.StatusNotFound:
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		return status.Error(codes.NotFound, string(b))
 	case http.StatusUnprocessableEntity:
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		return status.Error(codes.AlreadyExists, string(b))
 	default:
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		return status.Errorf(codes.Internal, "resp: %s, %q", resp.Status, b)
 	}
 }
