@@ -9,7 +9,7 @@ import (
 
 func SetupToken(tb testing.TB, ctx context.Context, token string) context.Context {
 	if token == "" {
-		tb.Fatalf("empty token")
+		tb.Skip("PACKAGECLOUD_TOKEN is not set")
 	}
 	return packagecloud.WithPackagecloudToken(ctx, token)
 }
