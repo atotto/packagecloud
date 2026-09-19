@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -61,7 +61,7 @@ func GetDownloadCount(ctx context.Context, pkg PackageDetail, startDate, endDate
 		}
 		return &count, nil
 	default:
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		return nil, fmt.Errorf("resp_status: %s, %q", resp.Status, b)
 	}
 }
@@ -121,7 +121,7 @@ func GetDownloadDetail(ctx context.Context, pkg PackageDetail, startDate, endDat
 			}
 			details = append(details, detail...)
 		default:
-			b, _ := ioutil.ReadAll(resp.Body)
+			b, _ := io.ReadAll(resp.Body)
 			return nil, fmt.Errorf("resp: %s, %q", resp.Status, b)
 		}
 

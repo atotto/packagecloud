@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -55,7 +54,7 @@ func PushPackage(ctx context.Context, repos, distro, version string, fpath strin
 		}
 		defer resp.Body.Close()
 		if resp.StatusCode > 400 {
-			body, _ := ioutil.ReadAll(resp.Body)
+			body, _ := io.ReadAll(resp.Body)
 			return status.Errorf(codes.InvalidArgument, "http GET: %s\n>> %q", resp.Status, body)
 		}
 		r = resp.Body
@@ -182,7 +181,7 @@ func SearchPackage(ctx context.Context, repos, distro string, perPage int, query
 			}
 			details = append(details, detail...)
 		default:
-			b, _ := ioutil.ReadAll(resp.Body)
+			b, _ := io.ReadAll(resp.Body)
 			return nil, fmt.Errorf("resp: %s, %q", resp.Status, b)
 		}
 	}
