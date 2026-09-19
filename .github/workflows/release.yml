@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: Install staticcheck
+        run: go install honnef.co/go/tools/cmd/staticcheck@latest
+
+      - name: staticcheck
+        run: staticcheck ./...
+
+      - name: go test
+        run: go test -v ./...
+        env:
+          PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
+
+      - name: Install Debian package build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes fakeroot lintian
+
+      - name: Install go-bin-deb
+        env:
+          GO_BIN_DEB_SHA256: 520eeaee7ebd3a7c317fda0c57a93a56c870d36a0dcee0c3d397807f5ef8b8d4
+          GO_BIN_DEB_URL: https://github.com/groove-x/go-bin-deb/releases/download/0.0.19%2Bgx11/go-bin-deb-amd64.deb
+        run: |
+          curl --fail --location --silent --show-error \
+            --output "$RUNNER_TEMP/go-bin-deb.deb" "$GO_BIN_DEB_URL"
+          echo "$GO_BIN_DEB_SHA256  $RUNNER_TEMP/go-bin-deb.deb" | sha256sum --check --strict
+          dpkg-deb --extract "$RUNNER_TEMP/go-bin-deb.deb" "$RUNNER_TEMP/go-bin-deb"
+          echo "$RUNNER_TEMP/go-bin-deb/usr/bin" >> "$GITHUB_PATH"
+
+      - name: Build Debian packages
+        run: ./scripts/build-deb.sh "$GITHUB_REF_NAME"
+
+      - name: Create GitHub Release
+        run: gh release create "$GITHUB_REF_NAME" packagecloud_*.deb --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}
