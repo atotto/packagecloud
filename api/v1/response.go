@@ -10,7 +10,7 @@ import (
 
 func processResponse(resp *http.Response) error {
 	switch resp.StatusCode {
-	case http.StatusCreated:
+	case http.StatusOK, http.StatusCreated:
 		return nil
 	case http.StatusUnauthorized:
 		b, _ := io.ReadAll(resp.Body)
